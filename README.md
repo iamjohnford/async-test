@@ -7,7 +7,7 @@
 
 Visit http://localhost:3000/
 
-Upload around 10 files. They can be small plain text files.
+Upload around 10 files. Test files can be found in `test/fixtures/files`.
 
 Every so often, an error such as the following appears:
 
