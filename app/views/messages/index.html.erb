@@ -1,0 +1,13 @@
+<%= form_tag('/messages/upload', remote: true, data: { controller: 'upload' }) do |form| %>
+  <div class="dropzone dz-clickable" action="/" data-target="upload.drop">
+    <div class="dropzone-msg dz-message">
+      <h3 class="dropzone-msg-title">
+        Drop files here or click to upload.
+      </h3>
+    </div>
+
+    <%= file_field_tag :files, multiple: true, direct_upload: true, style: 'display: none', data: { target: 'upload.file' } %>
+  </div>
+
+  <div class="dropzone-previews"></div>
+<% end %>
