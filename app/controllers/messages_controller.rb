@@ -1,6 +1,7 @@
 class MessagesController < ApplicationController
 
   def index
+    Message.find_or_create_by(id: 1)
   end
 
   def upload
