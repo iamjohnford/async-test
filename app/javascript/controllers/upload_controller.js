@@ -1,58 +1,38 @@
 import { Controller } from "stimulus"
-import { DirectUpload } from "@rails/activestorage"
-const Dropzone = require("dropzone")
-Dropzone.autoDiscover = false
+import consumer from "../channels/consumer"
 
 export default class extends Controller {
 
-  static targets = [ 'drop', 'file' ]
-
-  uploadFile = (file, url) => {
-    const upload = new DirectUpload(file, url, this)
-
-    upload.create((error, blob) => {
-      if (error) {
-        console.error(file, error)
-      } else {
-        this.uploadSuccess(file, blob)
-      }
-    })
-  };
-
-  uploadSuccess(file, blob) {
-    Rails.ajax({
-      url: this.element.getAttribute('action'),
-      type: "PATCH",
-      data: `files=${blob.signed_id}`,
-      dataType: 'script',
-      success: function(data) {
-        file.previewElement.innerHTML += ' - OK'
-      },
-      error: function(data) {
-        file.previewElement.innerHTML += ' - ERROR - ' + data.split('Extracted source')[0]
-        console.error(data)
-      }
-    })
-  }
+  static targets = []
 
   connect() {
-    const url = this.fileTarget.dataset.directUploadUrl
+    if (!this.messageChannel || this.messageChannel.consumer.connection.disconected) {
+      console.log("creating subscription")
+      this.messageChannel = consumer.subscriptions.create( { channel: 'MessageChannel', message_id: this.data.get('message-id') }, {
+        connected() {
+          // Called when the subscription is ready for use on the server
+        },
 
-    this.myDropzone = new Dropzone(this.dropTarget, {
-      url,
-      autoProcessQueue: false,
-      parallelUploads: 3,
-      paramName: 'file',
-      previewsContainer: '.dropzone-previews',
-      previewTemplate: '<div><span data-dz-name></span></div>'
-    });
+        disconnected() {
+          // Called when the subscription has been terminated by the server
+        },
 
-    this.myDropzone.on('addedfile', (file) => this.uploadFile(file, url))
+        received(data) {
+          console.log("Received", data)
+        }
+      });
+    }
+    else {
+      console.log("Reusing connection")
+    }
   }
 
   disconnect() {
-    this.myDropzone.disable()
-    this.myDropzone = null
+    if (this.messageChannel) {
+      console.log("unsubscribe")
+      this.messageChannel.unsubscribe()
+      this.messageChannel = null
+    }
   }
 
 }
